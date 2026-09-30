@@ -1,0 +1,30 @@
+#!/bin/sh
+# A push publishes only commits the check has vouched for, the same rule a
+# deploy keeps (opus_check_commit in ../check.sh). A commit the remote already
+# has is published whatever this says, so only what is new is asked about.
+# Every ref is read before anything runs: the check's docker calls would
+# otherwise read the rest of git's list as their own input.
+set -eu
+. "$(dirname "$0")/../check.sh"
+
+zero=0000000000000000000000000000000000000000
+refs=$(cat)
+
+# The owner's clones also answer to a private pre-publication gate (real names,
+# plates, MACs, secrets) that no commit carries, found through the clone's own
+# config. A push to the owner's account without it is refused, not waved on.
+gate=$(git config --get publicgate.command || true)
+if [ -n "$gate" ]; then
+	printf '%s\n' "$refs" | "$gate" pre-push "$@"
+else
+	case "$2" in
+	*[:/][Bb]acinac/*) echo "✗ $2 is the owner's and this clone has no publicgate.command — push blocked" >&2; exit 1 ;;
+	esac
+fi
+
+pushed=$(printf '%s\n' "$refs" | while read -r _ sha _ _; do [ "$sha" = "$zero" ] || echo "$sha"; done | sort -u)
+
+for sha in $pushed; do
+	[ -z "$(git branch -r --contains "$sha")" ] || continue
+	opus_check_commit "$sha"
+done

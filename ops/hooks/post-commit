@@ -1,0 +1,6 @@
+#!/bin/sh
+# Keeps backend/revision.json on the commit the tree is at. A stamp that cannot
+# be written is said, and never stops the commit, merge or checkout under it.
+. "$(dirname "$0")/../revision.sh"
+opus_stamp || echo "revision.json was not stamped" >&2
+exit 0
