@@ -7,7 +7,10 @@
 # vocabulary the backend owns — so it runs over the repository itself,
 # read-only, in the frontend's own image. The frontend's logic is tested
 # (vitest), every button has to carry a name a screen reader can say (the kit's
-# names.mjs), every size of text is a step of the kit's scale (type.mjs), and
+# names.mjs), every size of text is a step of the kit's scale (type.mjs), every
+# help article is whole in both languages and every page it names for this
+# module is one of its routes (articles.mjs over opus-ui's help — the other
+# two modules' pages are held to their routes by their own checks), and
 # the frontend is also built the way
 # production builds it, because the type checker never bundles and a module
 # that only fails to bundle would otherwise be found by the deploy. A backend
@@ -130,6 +133,10 @@ opus_check() {
 	# the module's name is its compose project's, which names its plugin tests
 	# and locks
 	OPUS_MODULE=$(sed -n 's/^name: //p' docker-compose.yml)
+	# the help's apps, this one with the source the check can read
+	help_apps=$(for app in library downloads player; do
+		if [ "opus-$app" = "$OPUS_MODULE" ]; then printf ' %s=src' "$app"; else printf ' %s' "$app"; fi
+	done)
 
 	plugins_before=$(opus_plugin_trees)
 	tree_before=$(opus_check_tree)
@@ -147,6 +154,7 @@ opus_check() {
 		node --test src/lib/kit/*.test.mjs src/lib/opus/*.test.mjs
 		node src/lib/kit/names.mjs src
 		node src/lib/kit/type.mjs src
+		node src/lib/kit/articles.mjs src/lib/opus/help$help_apps
 		npx vitest run
 		NODE_ENV=production npm run build >/tmp/build.log 2>&1 || { cat /tmp/build.log; exit 1; }
 		echo 'production build: clean'"
