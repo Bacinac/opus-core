@@ -35,6 +35,7 @@ opus_build() {
 		find "$context" -type f -exec touch {} +
 	done
 	compose build "$@"
+	docker image prune -f --filter "label=com.docker.compose.project=$(compose config | sed -n 's/^name: //p')" >/dev/null
 }
 
 generate() {
