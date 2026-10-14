@@ -230,6 +230,6 @@ opus_deploy() {
 	echo "==> prune"
 	# every rebuild leaves the image a service ran before untagged, and BuildKit's
 	# own collector let its cache outgrow the LXC's 32 GB root disk
-	ssh "${SSH_HOST}" "sudo pct exec ${LXC_ID} -- sh -c 'docker image prune -f --filter label=com.docker.compose.project=${OPUS_MODULE} && docker builder prune -f --max-used-space 8GB'"
+	ssh "${SSH_HOST}" "sudo pct exec ${LXC_ID} -- sh -c 'docker image prune -f --filter label=com.docker.compose.project=${OPUS_MODULE} >/dev/null && docker builder prune -f --max-used-space 8GB >/dev/null'"
 	echo "deploy ${instance}: done"
 }
