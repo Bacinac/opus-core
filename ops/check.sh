@@ -19,7 +19,8 @@
 # the door protocol's and this core's, run with every warning an error. Every locked dependency,
 # Python and npm alike, is looked up in the public advisories: a known
 # vulnerability turns the check red instead of waiting for someone to read a
-# feed. The Python lock is read as data, so it is audited in a plain Python
+# feed, unless ops/npm-accepted.txt names it and nothing can be done about it
+# yet. The Python lock is read as data, so it is audited in a plain Python
 # rather than in the backend, whose /tmp may not execute what pip installs.
 #
 # The check vouches for a tree, not for a moment: the tree's id is taken before
@@ -162,7 +163,8 @@ opus_check() {
 		set -e
 		node /repo/frontend/src/lib/i18n/words.mjs
 		cd /repo/frontend
-		npm audit'
+		npm audit --json >/tmp/audit.json || true
+		node /repo/backend/opus_core/ops/npm-audit.mjs /tmp/audit.json /repo/backend/opus_core/ops/npm-accepted.txt'
 	# A module's own tests are the module as it is published, so its conftest
 	# points OPUS_PLUGIN_ROOT at nothing. A plugin's tests run on their own,
 	# after the module's, with the plugins in place and the module's conftest

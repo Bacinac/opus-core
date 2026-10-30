@@ -1,0 +1,3 @@
+# Advisories the check lets through, one per line: the id, then why it cannot
+# be acted on and why it does not reach a running module.
+GHSA-gcqx-w48m-w2h4 deepmerge <= 4.3.1, no patched release: only vite-plugin-svelte uses it, at build time, to merge the module's own svelte.config
