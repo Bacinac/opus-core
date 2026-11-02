@@ -76,6 +76,7 @@ opus_env_file() {
 	[[ -f "$ENV_FILE" ]] && return
 	cp .env.example "$ENV_FILE"
 	chmod 600 "$ENV_FILE"
+	OPUS_NEW_INSTALL=1
 	echo "created $ENV_FILE"
 }
 
@@ -139,4 +140,18 @@ opus_wait() {
 	compose ps
 	echo "$what did not become ready" >&2
 	exit 1
+}
+
+# opus_install_ping MODULE — one anonymous request for the release's one-byte
+# install-MODULE asset, whose download count is the only record of a finished
+# install. Only a run that created the environment file counts: an upgrade is
+# the same installer run again. OPUS_NO_PING=1 skips it; a failed request never
+# fails the install.
+opus_install_ping() {
+	[[ "${OPUS_NEW_INSTALL:-}" == 1 && "${OPUS_NO_PING:-}" != 1 ]] || return 0
+	local path=latest/download
+	[[ -z "${OPUS_RELEASE:-}" ]] || path=download/$OPUS_RELEASE
+	curl -fsSL --max-time 3 -o /dev/null "https://github.com/Bacinac/opus-library/releases/$path/install-$1" 2>/dev/null &&
+		echo "Sent one anonymous install count to GitHub (OPUS_NO_PING=1 skips it)."
+	return 0
 }
