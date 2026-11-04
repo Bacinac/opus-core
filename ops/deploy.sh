@@ -222,7 +222,9 @@ opus_deploy() {
 
 	echo "==> health"
 	for port in "${OPUS_HEALTH_PORTS[@]}"; do
-		ssh "${SSH_HOST}" "sudo pct exec ${LXC_ID} -- curl -fsS --retry 30 --retry-delay 2 --retry-connrefused --retry-all-errors http://localhost:${port}/api/ping"
+		# quiet while the service starts: curl -S names every refused attempt
+		ssh "${SSH_HOST}" "sudo pct exec ${LXC_ID} -- curl -fs --retry 30 --retry-delay 2 --retry-connrefused --retry-all-errors http://localhost:${port}/api/ping" \
+			|| { echo "port ${port} did not answer /api/ping within a minute" >&2; exit 1; }
 		echo
 	done
 	if declare -F opus_deploy_module >/dev/null; then opus_deploy_module; fi
