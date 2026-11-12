@@ -115,8 +115,7 @@ opus_pass_through() {
 opus_production() {
 	env_set OPUS_APP_UID "$(id -u)"
 	env_set OPUS_APP_GID "$(id -g)"
-	env_set OPUS_UI_TARGET prod
-	env_set OPUS_DEV_RELOAD 0
+	env_set OPUS_ROLE production
 }
 
 opus_validate() {
